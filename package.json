@@ -2,11 +2,11 @@
   "name": "node-pos",
   "version": "1.0.0",
   "description": "API em Node para matéria de Fullstack Developer - Pós Graduação",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "node --watch index.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },
@@ -33,6 +33,8 @@
     "morgan": "^1.11.0"
   },
   "devDependencies": {
-    "prettier": "^3.8.3"
+    "jest": "^30.4.2",
+    "prettier": "^3.8.3",
+    "supertest": "^7.2.2"
   }
 }
