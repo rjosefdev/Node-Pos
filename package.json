@@ -4,7 +4,7 @@
   "description": "API em Node para matéria de Fullstack Developer - Pós Graduação",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "format": "prettier . --write",
