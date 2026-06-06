@@ -2,9 +2,10 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/;
+const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const DMY_REGEX = /^\d{2}-\d{2}-\d{4}$/;
 
-function normalizeIsoDate(value) {
+function normalizeAcceptedDate(value) {
   if (value == null || value === '') {
     return value;
   }
@@ -13,8 +14,14 @@ function normalizeIsoDate(value) {
     return value;
   }
 
-  if (typeof value === 'string' && ISO_8601_REGEX.test(value)) {
-    return new Date(value);
+  if (typeof value === 'string' && YMD_REGEX.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+
+  if (typeof value === 'string' && DMY_REGEX.test(value)) {
+    const [day, month, year] = value.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
   }
 
   return new Date(NaN);
@@ -40,7 +47,7 @@ const transacaoSchema = new Schema(
     data: {
       type: Date,
       required: [true, 'A data da transação e obrigatória.'],
-      set: normalizeIsoDate,
+      set: normalizeAcceptedDate,
     },
     valor: {
       type: Number,

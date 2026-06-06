@@ -1,12 +1,34 @@
-const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/;
+const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const DMY_REGEX = /^\d{2}-\d{2}-\d{4}$/;
 
-function isIso8601Date(value) {
-  if (typeof value !== 'string' || !ISO_8601_REGEX.test(value)) {
+function isAcceptedDate(value) {
+  if (typeof value !== 'string') {
     return false;
   }
 
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime());
+  if (YMD_REGEX.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    );
+  }
+
+  if (DMY_REGEX.test(value)) {
+    const [day, month, year] = value.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    );
+  }
+
+  return false;
 }
 
 export function validarTransacaoPayload(payload = {}) {
@@ -31,8 +53,11 @@ export function validarTransacaoPayload(payload = {}) {
 
   if (data == null || data === '') {
     erros.push({ campo: 'data', mensagem: 'A data da transação é obrigatória.' });
-  } else if (!isIso8601Date(data)) {
-    erros.push({ campo: 'data', mensagem: 'A data deve estar em ISO 8601.' });
+  } else if (!isAcceptedDate(data)) {
+    erros.push({
+      campo: 'data',
+      mensagem: 'A data deve estar no formato AAAA-MM-DD ou DD-MM-AAAA.',
+    });
   }
 
   if (valor == null || valor === '') {

@@ -30,7 +30,7 @@ describe('API de transacoes', () => {
     const resposta = await request(app).post('/transacoes').send({
       tipo: ' Receita ',
       categoria: '  Salario  ',
-      data: '2026-06-06T10:30:00.000Z',
+      data: '2026-06-06',
       valor: 1250.75,
     });
 
@@ -39,7 +39,7 @@ describe('API de transacoes', () => {
     expect(transacaoMock).toHaveBeenCalledWith({
       tipo: 'receita',
       categoria: 'Salario',
-      data: '2026-06-06T10:30:00.000Z',
+      data: '2026-06-06',
       valor: 1250.75,
     });
     expect(saveMock).toHaveBeenCalledTimes(1);
@@ -47,7 +47,7 @@ describe('API de transacoes', () => {
       _id: 'transacao-1',
       tipo: 'receita',
       categoria: 'Salario',
-      data: '2026-06-06T10:30:00.000Z',
+      data: '2026-06-06',
       valor: 1250.75,
     });
     expect(resposta.body.descricao).toBeUndefined();
@@ -77,7 +77,7 @@ describe('API de transacoes', () => {
         }),
         expect.objectContaining({
           campo: 'data',
-          mensagem: 'A data deve estar em ISO 8601.',
+          mensagem: 'A data deve estar no formato AAAA-MM-DD ou DD-MM-AAAA.',
         }),
         expect.objectContaining({
           campo: 'valor',

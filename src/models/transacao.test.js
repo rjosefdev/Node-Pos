@@ -5,7 +5,7 @@ function criarTransacaoValida(overrides = {}) {
   return new Transacao({
     tipo: 'receita',
     categoria: 'Salario',
-    data: '2026-06-06T10:30:00.000Z',
+    data: '2026-06-06',
     valor: 1250.75,
     descricao: 'Pagamento mensal',
     ...overrides,
@@ -29,9 +29,17 @@ describe('Transacao model', () => {
     expect(transacao.tipo).toBe('receita');
     expect(transacao.categoria).toBe('Salario');
     expect(transacao.data).toBeInstanceOf(Date);
-    expect(transacao.data.toISOString()).toBe('2026-06-06T10:30:00.000Z');
+    expect(transacao.data.toISOString()).toBe('2026-06-06T00:00:00.000Z');
     expect(transacao.valor).toBe(1250.75);
     expect(transacao.descricao).toBe('Pagamento mensal');
+  });
+
+  it('aceita data no formato DD-MM-AAAA', () => {
+    const transacao = criarTransacaoValida({ data: '06-06-2026' });
+    const erro = transacao.validateSync();
+
+    expect(erro).toBeUndefined();
+    expect(transacao.data.toISOString()).toBe('2026-06-06T00:00:00.000Z');
   });
 
   it('mantem descricao como opcional', () => {
