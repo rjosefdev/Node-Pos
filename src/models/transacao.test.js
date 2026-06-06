@@ -17,6 +17,10 @@ describe('Transacao model', () => {
     await mongoose.disconnect();
   });
 
+  it('usa a collection transacoes', () => {
+    expect(Transacao.collection.name).toBe('transacoes');
+  });
+
   it('valida uma transacao com os campos essenciais do dominio', () => {
     const transacao = criarTransacaoValida();
     const erro = transacao.validateSync();
@@ -69,7 +73,7 @@ describe('Transacao model', () => {
 
     expect(erro).toBeDefined();
     expect(Object.keys(erro.errors)).toEqual(
-      expect.arrayContaining(['tipo', 'categoria', 'data', 'valor']),
+      expect.arrayContaining(['tipo', 'categoria', 'data', 'valor'])
     );
   });
 });

@@ -54,11 +54,13 @@ const transacaoSchema = new Schema(
     },
   },
   {
+    collection: 'transacoes',
     versionKey: false,
   }
 );
 
-const Transacao = mongoose.models.Transacao || mongoose.model('Transacao', transacaoSchema);
+const Transacao =
+  mongoose.models.Transacao || mongoose.model('Transacao', transacaoSchema, 'transacoes');
 
 export default Transacao;
 export { transacaoSchema };
