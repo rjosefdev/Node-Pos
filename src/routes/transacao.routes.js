@@ -1,8 +1,14 @@
 import { Router } from 'express';
-import { criarTransacao } from '../controllers/transacao.controller.js';
+import {
+  buscarTransacaoPorId,
+  criarTransacao,
+  listarTransacoes,
+} from '../controllers/transacao.controller.js';
 
 const router = Router();
 
+router.get('/transacoes', listarTransacoes);
 router.post('/transacoes', criarTransacao);
+router.get('/transacoes/:id', buscarTransacaoPorId);
 
 export default router;
