@@ -64,6 +64,113 @@ describe('API de transacoes', () => {
     expect(resposta.body.descricao).toBeUndefined();
   });
 
+  it('atualiza uma transacao existente e persiste as alteracoes', async () => {
+    const transacaoExistente = {
+      _id: 'transacao-42',
+      tipo: 'despesa',
+      categoria: 'Alimentacao',
+      data: '2026-06-10',
+      valor: 87.9,
+      descricao: 'Almoco',
+      save: saveMock,
+    };
+
+    const execMock = jest.fn().mockResolvedValue(transacaoExistente);
+    findByIdMock.mockReturnValue({ exec: execMock });
+    saveMock.mockImplementation(function () {
+      return Promise.resolve({
+        _id: this._id,
+        tipo: this.tipo,
+        categoria: this.categoria,
+        data: this.data,
+        valor: this.valor,
+        descricao: this.descricao,
+      });
+    });
+
+    const resposta = await request(app).put('/transacoes/transacao-42').send({
+      tipo: ' Receita ',
+      categoria: '  Salario  ',
+      data: '2026-06-12',
+      valor: 1500.5,
+      descricao: ' Salario atualizado ',
+    });
+
+    expect(resposta.status).toBe(200);
+    expect(findByIdMock).toHaveBeenCalledWith('transacao-42');
+    expect(execMock).toHaveBeenCalledTimes(1);
+    expect(saveMock).toHaveBeenCalledTimes(1);
+    expect(transacaoExistente.tipo).toBe('receita');
+    expect(transacaoExistente.categoria).toBe('Salario');
+    expect(transacaoExistente.data).toBe('2026-06-12');
+    expect(transacaoExistente.valor).toBe(1500.5);
+    expect(transacaoExistente.descricao).toBe('Salario atualizado');
+    expect(resposta.body).toEqual({
+      _id: 'transacao-42',
+      tipo: 'receita',
+      categoria: 'Salario',
+      data: '2026-06-12',
+      valor: 1500.5,
+      descricao: 'Salario atualizado',
+    });
+  });
+
+  it('rejeita atualizacao invalida com mensagens coerentes', async () => {
+    const resposta = await request(app).put('/transacoes/transacao-42').send({
+      tipo: 'transferencia',
+      categoria: '',
+      data: '06/06/2026',
+      valor: -10,
+    });
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body).toMatchObject({
+      mensagem: 'Nao foi possivel atualizar a transacao.',
+    });
+    expect(resposta.body.erros).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          campo: 'tipo',
+          mensagem: 'O tipo deve ser receita ou despesa.',
+        }),
+        expect.objectContaining({
+          campo: 'categoria',
+          mensagem: 'A categoria da transação é obrigatória.',
+        }),
+        expect.objectContaining({
+          campo: 'data',
+          mensagem: 'A data deve estar no formato AAAA-MM-DD ou DD-MM-AAAA.',
+        }),
+        expect.objectContaining({
+          campo: 'valor',
+          mensagem: 'O valor da transação deve ser maior que zero.',
+        }),
+      ])
+    );
+    expect(findByIdMock).not.toHaveBeenCalled();
+    expect(saveMock).not.toHaveBeenCalled();
+  });
+
+  it('retorna 404 quando tenta atualizar uma transacao inexistente', async () => {
+    const execMock = jest.fn().mockResolvedValue(null);
+    findByIdMock.mockReturnValue({ exec: execMock });
+
+    const resposta = await request(app).put('/transacoes/transacao-inexistente').send({
+      tipo: 'despesa',
+      categoria: 'Alimentacao',
+      data: '2026-06-12',
+      valor: 20,
+    });
+
+    expect(resposta.status).toBe(404);
+    expect(resposta.body).toEqual({
+      mensagem: 'Transacao nao encontrada.',
+    });
+    expect(findByIdMock).toHaveBeenCalledWith('transacao-inexistente');
+    expect(execMock).toHaveBeenCalledTimes(1);
+    expect(saveMock).not.toHaveBeenCalled();
+  });
+
   it('rejeita payload invalido com mensagens coerentes', async () => {
     const resposta = await request(app).post('/transacoes').send({
       tipo: 'transferencia',

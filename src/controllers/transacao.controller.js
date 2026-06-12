@@ -141,6 +141,48 @@ export async function criarTransacao(req, res, next) {
   }
 }
 
+export async function atualizarTransacao(req, res, next) {
+  try {
+    const { erros, transacaoValida } = validarTransacaoPayload(req.body);
+
+    if (erros.length > 0) {
+      return res.status(400).json({
+        mensagem: 'Nao foi possivel atualizar a transacao.',
+        erros,
+      });
+    }
+
+    const { id } = req.params;
+
+    let transacao;
+
+    try {
+      transacao = await Transacao.findById(id).exec();
+    } catch (erro) {
+      if (erro?.name === 'CastError') {
+        return res.status(404).json({
+          mensagem: 'Transacao nao encontrada.',
+        });
+      }
+
+      throw erro;
+    }
+
+    if (!transacao) {
+      return res.status(404).json({
+        mensagem: 'Transacao nao encontrada.',
+      });
+    }
+
+    Object.assign(transacao, transacaoValida);
+    const transacaoAtualizada = await transacao.save();
+
+    return res.json(transacaoAtualizada);
+  } catch (erro) {
+    return next(erro);
+  }
+}
+
 export async function listarTransacoes(req, res, next) {
   try {
     const filtro = montarFiltroTransacoes(req.query);
