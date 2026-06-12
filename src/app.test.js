@@ -219,6 +219,55 @@ describe('API de transacoes', () => {
     expect(execMock).toHaveBeenCalledTimes(1);
   });
 
+  it('consulta o saldo geral considerando receitas e despesas', async () => {
+    const execMock = jest.fn().mockResolvedValue([
+      { _id: 't-1', tipo: 'receita', valor: 250 },
+      { _id: 't-2', tipo: 'despesa', valor: 40 },
+      { _id: 't-3', tipo: 'receita', valor: 100 },
+    ]);
+
+    findMock.mockReturnValue({ exec: execMock });
+
+    const resposta = await request(app).get('/transacoes/saldo');
+
+    expect(resposta.status).toBe(200);
+    expect(findMock).toHaveBeenCalledWith({});
+    expect(execMock).toHaveBeenCalledTimes(1);
+    expect(resposta.body).toEqual({
+      receitas: 350,
+      despesas: 40,
+      saldo: 310,
+    });
+  });
+
+  it('consulta o saldo filtrado por intervalo de datas', async () => {
+    const execMock = jest.fn().mockResolvedValue([
+      { _id: 't-2', tipo: 'despesa', valor: 75 },
+      { _id: 't-3', tipo: 'receita', valor: 125 },
+    ]);
+
+    findMock.mockReturnValue({ exec: execMock });
+
+    const resposta = await request(app).get('/transacoes/saldo').query({
+      dataInicio: '2026-06-02',
+      dataFim: '2026-06-10',
+    });
+
+    expect(resposta.status).toBe(200);
+    expect(findMock).toHaveBeenCalledWith({
+      data: {
+        $gte: criarDataUtc(2026, 6, 2),
+        $lte: criarDataUtc(2026, 6, 10),
+      },
+    });
+    expect(execMock).toHaveBeenCalledTimes(1);
+    expect(resposta.body).toEqual({
+      receitas: 125,
+      despesas: 75,
+      saldo: 50,
+    });
+  });
+
   it('consulta uma transacao pelo identificador', async () => {
     const execMock = jest.fn().mockResolvedValue({
       _id: 'transacao-42',
