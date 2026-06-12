@@ -183,6 +183,36 @@ export async function atualizarTransacao(req, res, next) {
   }
 }
 
+export async function excluirTransacao(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    let transacaoRemovida;
+
+    try {
+      transacaoRemovida = await Transacao.findByIdAndDelete(id).exec();
+    } catch (erro) {
+      if (erro?.name === 'CastError') {
+        return res.status(404).json({
+          mensagem: 'Transacao nao encontrada.',
+        });
+      }
+
+      throw erro;
+    }
+
+    if (!transacaoRemovida) {
+      return res.status(404).json({
+        mensagem: 'Transacao nao encontrada.',
+      });
+    }
+
+    return res.status(204).send();
+  } catch (erro) {
+    return next(erro);
+  }
+}
+
 export async function listarTransacoes(req, res, next) {
   try {
     const filtro = montarFiltroTransacoes(req.query);

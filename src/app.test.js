@@ -4,6 +4,7 @@ import request from 'supertest';
 const saveMock = jest.fn();
 const findMock = jest.fn();
 const findByIdMock = jest.fn();
+const findByIdAndDeleteMock = jest.fn();
 const transacaoMock = jest.fn().mockImplementation(function (dados) {
   this.dados = dados;
   this.save = saveMock;
@@ -11,6 +12,7 @@ const transacaoMock = jest.fn().mockImplementation(function (dados) {
 
 transacaoMock.find = findMock;
 transacaoMock.findById = findByIdMock;
+transacaoMock.findByIdAndDelete = findByIdAndDeleteMock;
 
 function criarDataUtc(ano, mes, dia) {
   return new Date(Date.UTC(ano, mes - 1, dia));
@@ -28,6 +30,7 @@ describe('API de transacoes', () => {
     saveMock.mockReset();
     findMock.mockReset();
     findByIdMock.mockReset();
+    findByIdAndDeleteMock.mockReset();
   });
 
   it('cadastra uma transacao valida e persiste os dados normalizados', async () => {
@@ -415,5 +418,82 @@ describe('API de transacoes', () => {
     });
     expect(findByIdMock).toHaveBeenCalledWith('transacao-inexistente');
     expect(execMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('exclui uma transacao permanentemente e remove dos resultados', async () => {
+    const transacoes = new Map();
+
+    saveMock.mockImplementation(function () {
+      const transacaoCriada = {
+        _id: 'transacao-1',
+        ...this.dados,
+      };
+
+      transacoes.set(transacaoCriada._id, transacaoCriada);
+
+      return Promise.resolve(transacaoCriada);
+    });
+
+    findByIdAndDeleteMock.mockImplementation((id) => ({
+      exec: jest.fn().mockImplementation(async () => {
+        const transacao = transacoes.get(id) ?? null;
+
+        if (transacao) {
+          transacoes.delete(id);
+        }
+
+        return transacao;
+      }),
+    }));
+
+    findMock.mockImplementation((filtro = {}) => {
+      const documentos = [...transacoes.values()].filter((transacao) => {
+        if (typeof filtro.tipo === 'string' && transacao.tipo !== filtro.tipo) {
+          return false;
+        }
+
+        if (filtro.categoria instanceof RegExp && !filtro.categoria.test(transacao.categoria)) {
+          return false;
+        }
+
+        return true;
+      });
+
+      const execMock = jest.fn().mockResolvedValue(documentos);
+
+      return {
+        sort: jest.fn().mockReturnValue({ exec: execMock }),
+        exec: execMock,
+      };
+    });
+
+    const criacaoResposta = await request(app).post('/transacoes').send({
+      tipo: 'despesa',
+      categoria: 'Alimentacao',
+      data: '2026-06-11',
+      valor: 45.5,
+    });
+
+    expect(criacaoResposta.status).toBe(201);
+    expect(transacoes.has('transacao-1')).toBe(true);
+
+    const exclusaoResposta = await request(app).delete('/transacoes/transacao-1');
+
+    expect(exclusaoResposta.status).toBe(204);
+    expect(exclusaoResposta.text).toBe('');
+    expect(findByIdAndDeleteMock).toHaveBeenCalledWith('transacao-1');
+    expect(transacoes.has('transacao-1')).toBe(false);
+
+    const listagemResposta = await request(app).get('/transacoes');
+
+    expect(listagemResposta.status).toBe(200);
+    expect(listagemResposta.body).toEqual([]);
+
+    const filtragemResposta = await request(app)
+      .get('/transacoes')
+      .query({ categoria: 'alimentacao' });
+
+    expect(filtragemResposta.status).toBe(200);
+    expect(filtragemResposta.body).toEqual([]);
   });
 });
