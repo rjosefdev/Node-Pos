@@ -2,7 +2,6 @@ import Transacao from '../models/transacao.js';
 import { validarTransacaoPayload } from '../validators/transacao.js';
 
 const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const DMY_REGEX = /^\d{2}-\d{2}-\d{4}$/;
 const MOEDA_FIXA = 'BRL';
 
 function escaparRegex(valor) {
@@ -22,19 +21,6 @@ function normalizarDataFiltro(valor) {
 
   if (YMD_REGEX.test(dataTexto)) {
     const [ano, mes, dia] = dataTexto.split('-').map(Number);
-    const data = new Date(Date.UTC(ano, mes - 1, dia));
-
-    if (
-      data.getUTCFullYear() === ano &&
-      data.getUTCMonth() === mes - 1 &&
-      data.getUTCDate() === dia
-    ) {
-      return data;
-    }
-  }
-
-  if (DMY_REGEX.test(dataTexto)) {
-    const [dia, mes, ano] = dataTexto.split('-').map(Number);
     const data = new Date(Date.UTC(ano, mes - 1, dia));
 
     if (

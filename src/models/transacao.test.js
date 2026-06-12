@@ -34,12 +34,12 @@ describe('Transacao model', () => {
     expect(transacao.descricao).toBe('Pagamento mensal');
   });
 
-  it('aceita data no formato DD-MM-AAAA', () => {
+  it('rejeita data fora do formato ISO 8601', () => {
     const transacao = criarTransacaoValida({ data: '06-06-2026' });
     const erro = transacao.validateSync();
 
-    expect(erro).toBeUndefined();
-    expect(transacao.data.toISOString()).toBe('2026-06-06T00:00:00.000Z');
+    expect(erro).toBeDefined();
+    expect(erro.errors.data).toBeDefined();
   });
 
   it('mantem descricao como opcional', () => {

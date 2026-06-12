@@ -1,5 +1,4 @@
 const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const DMY_REGEX = /^\d{2}-\d{2}-\d{4}$/;
 
 function isAcceptedDate(value) {
   if (typeof value !== 'string') {
@@ -8,17 +7,6 @@ function isAcceptedDate(value) {
 
   if (YMD_REGEX.test(value)) {
     const [year, month, day] = value.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-
-    return (
-      date.getUTCFullYear() === year &&
-      date.getUTCMonth() === month - 1 &&
-      date.getUTCDate() === day
-    );
-  }
-
-  if (DMY_REGEX.test(value)) {
-    const [day, month, year] = value.split('-').map(Number);
     const date = new Date(Date.UTC(year, month - 1, day));
 
     return (
@@ -56,7 +44,7 @@ export function validarTransacaoPayload(payload = {}) {
   } else if (!isAcceptedDate(data)) {
     erros.push({
       campo: 'data',
-      mensagem: 'A data deve estar no formato AAAA-MM-DD ou DD-MM-AAAA.',
+      mensagem: 'A data deve estar no formato ISO 8601 AAAA-MM-DD.',
     });
   }
 

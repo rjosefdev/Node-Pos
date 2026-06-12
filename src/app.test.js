@@ -144,7 +144,7 @@ describe('API de transacoes', () => {
         }),
         expect.objectContaining({
           campo: 'data',
-          mensagem: 'A data deve estar no formato AAAA-MM-DD ou DD-MM-AAAA.',
+          mensagem: 'A data deve estar no formato ISO 8601 AAAA-MM-DD.',
         }),
         expect.objectContaining({
           campo: 'valor',
@@ -200,7 +200,7 @@ describe('API de transacoes', () => {
         }),
         expect.objectContaining({
           campo: 'data',
-          mensagem: 'A data deve estar no formato AAAA-MM-DD ou DD-MM-AAAA.',
+          mensagem: 'A data deve estar no formato ISO 8601 AAAA-MM-DD.',
         }),
         expect.objectContaining({
           campo: 'valor',
