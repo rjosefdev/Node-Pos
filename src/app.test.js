@@ -63,6 +63,7 @@ describe('API de transacoes', () => {
       categoria: 'Salario',
       data: '2026-06-06',
       valor: 1250.75,
+      moeda: 'BRL',
     });
     expect(resposta.body.descricao).toBeUndefined();
   });
@@ -115,6 +116,7 @@ describe('API de transacoes', () => {
       data: '2026-06-12',
       valor: 1500.5,
       descricao: 'Salario atualizado',
+      moeda: 'BRL',
     });
   });
 
@@ -228,9 +230,9 @@ describe('API de transacoes', () => {
     expect(sortMock).toHaveBeenCalledWith({ data: -1, _id: -1 });
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toEqual([
-      { _id: 't-3', data: '2026-06-03', valor: 30 },
-      { _id: 't-2', data: '2026-06-02', valor: 20 },
-      { _id: 't-1', data: '2026-06-01', valor: 10 },
+      { _id: 't-3', data: '2026-06-03', valor: 30, moeda: 'BRL' },
+      { _id: 't-2', data: '2026-06-02', valor: 20, moeda: 'BRL' },
+      { _id: 't-1', data: '2026-06-01', valor: 10, moeda: 'BRL' },
     ]);
   });
 
@@ -347,6 +349,7 @@ describe('API de transacoes', () => {
       receitas: 350,
       despesas: 40,
       saldo: 310,
+      moeda: 'BRL',
     });
   });
 
@@ -375,6 +378,7 @@ describe('API de transacoes', () => {
       receitas: 125,
       despesas: 75,
       saldo: 50,
+      moeda: 'BRL',
     });
   });
 
@@ -402,6 +406,7 @@ describe('API de transacoes', () => {
       data: '2026-06-10',
       valor: 87.9,
       descricao: 'Almoco',
+      moeda: 'BRL',
     });
   });
 

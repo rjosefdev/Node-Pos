@@ -3,6 +3,7 @@ import { validarTransacaoPayload } from '../validators/transacao.js';
 
 const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const DMY_REGEX = /^\d{2}-\d{2}-\d{4}$/;
+const MOEDA_FIXA = 'BRL';
 
 function escaparRegex(valor) {
   return valor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -121,6 +122,20 @@ function calcularResumoFinanceiro(transacoes = []) {
   );
 }
 
+function serializarTransacao(transacao) {
+  if (!transacao) {
+    return transacao;
+  }
+
+  const dados =
+    typeof transacao.toObject === 'function' ? transacao.toObject() : { ...transacao };
+
+  return {
+    ...dados,
+    moeda: MOEDA_FIXA,
+  };
+}
+
 export async function criarTransacao(req, res, next) {
   try {
     const { erros, transacaoValida } = validarTransacaoPayload(req.body);
@@ -135,7 +150,7 @@ export async function criarTransacao(req, res, next) {
     const transacao = new Transacao(transacaoValida);
     const transacaoCriada = await transacao.save();
 
-    return res.status(201).json(transacaoCriada);
+    return res.status(201).json(serializarTransacao(transacaoCriada));
   } catch (erro) {
     return next(erro);
   }
@@ -177,7 +192,7 @@ export async function atualizarTransacao(req, res, next) {
     Object.assign(transacao, transacaoValida);
     const transacaoAtualizada = await transacao.save();
 
-    return res.json(transacaoAtualizada);
+    return res.json(serializarTransacao(transacaoAtualizada));
   } catch (erro) {
     return next(erro);
   }
@@ -218,7 +233,7 @@ export async function listarTransacoes(req, res, next) {
     const filtro = montarFiltroTransacoes(req.query);
     const transacoes = await Transacao.find(filtro).sort({ data: -1, _id: -1 }).exec();
 
-    return res.json(transacoes);
+    return res.json(transacoes.map(serializarTransacao));
   } catch (erro) {
     return next(erro);
   }
@@ -230,7 +245,10 @@ export async function consultarSaldo(req, res, next) {
     const transacoes = await Transacao.find(filtro).exec();
     const resumo = calcularResumoFinanceiro(transacoes);
 
-    return res.json(resumo);
+    return res.json({
+      ...resumo,
+      moeda: MOEDA_FIXA,
+    });
   } catch (erro) {
     return next(erro);
   }
@@ -260,7 +278,7 @@ export async function buscarTransacaoPorId(req, res, next) {
       });
     }
 
-    return res.json(transacao);
+    return res.json(serializarTransacao(transacao));
   } catch (erro) {
     return next(erro);
   }
