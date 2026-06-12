@@ -161,8 +161,8 @@ describe('API de transacoes', () => {
     findMock.mockReturnValue({ sort: sortMock });
 
     const resposta = await request(app).get('/transacoes').query({
-      dataInicial: '2026-06-02',
-      dataFinal: '2026-06-10',
+      dataInicio: '2026-06-02',
+      dataFim: '2026-06-10',
     });
 
     expect(resposta.status).toBe(200);
@@ -172,6 +172,23 @@ describe('API de transacoes', () => {
         $lte: criarDataUtc(2026, 6, 10),
       },
     });
+    expect(sortMock).toHaveBeenCalledWith({ data: -1, _id: -1 });
+    expect(execMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignora aliases antigos de intervalo de datas', async () => {
+    const execMock = jest.fn().mockResolvedValue([{ _id: 't-1' }]);
+    const sortMock = jest.fn().mockReturnValue({ exec: execMock });
+
+    findMock.mockReturnValue({ sort: sortMock });
+
+    const resposta = await request(app).get('/transacoes').query({
+      dataInicial: '2026-06-02',
+      dataFinal: '2026-06-10',
+    });
+
+    expect(resposta.status).toBe(200);
+    expect(findMock).toHaveBeenCalledWith({});
     expect(sortMock).toHaveBeenCalledWith({ data: -1, _id: -1 });
     expect(execMock).toHaveBeenCalledTimes(1);
   });

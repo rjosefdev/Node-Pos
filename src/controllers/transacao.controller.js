@@ -79,12 +79,8 @@ function montarFiltroTransacoes(query = {}) {
     }
   }
 
-  const dataInicial = normalizarDataFiltro(
-    obterPrimeiroValorInformado(query, ['dataInicial', 'dataInicio', 'de'])
-  );
-  const dataFinal = normalizarDataFiltro(
-    obterPrimeiroValorInformado(query, ['dataFinal', 'dataFim', 'ate'])
-  );
+  const dataInicial = normalizarDataFiltro(obterPrimeiroValorInformado(query, ['dataInicio']));
+  const dataFinal = normalizarDataFiltro(obterPrimeiroValorInformado(query, ['dataFim']));
 
   if (dataInicial || dataFinal) {
     filtro.data = {};
