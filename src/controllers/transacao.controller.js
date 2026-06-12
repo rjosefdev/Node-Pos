@@ -97,6 +97,30 @@ function montarFiltroTransacoes(query = {}) {
   return filtro;
 }
 
+function calcularResumoFinanceiro(transacoes = []) {
+  return transacoes.reduce(
+    (resumo, transacao) => {
+      const valor = Number(transacao?.valor) || 0;
+      const tipo = transacao?.tipo;
+
+      if (tipo === 'receita') {
+        resumo.receitas += valor;
+        resumo.saldo += valor;
+      } else if (tipo === 'despesa') {
+        resumo.despesas += valor;
+        resumo.saldo -= valor;
+      }
+
+      return resumo;
+    },
+    {
+      receitas: 0,
+      despesas: 0,
+      saldo: 0,
+    }
+  );
+}
+
 export async function criarTransacao(req, res, next) {
   try {
     const { erros, transacaoValida } = validarTransacaoPayload(req.body);
@@ -123,6 +147,18 @@ export async function listarTransacoes(req, res, next) {
     const transacoes = await Transacao.find(filtro).sort({ data: -1, _id: -1 }).exec();
 
     return res.json(transacoes);
+  } catch (erro) {
+    return next(erro);
+  }
+}
+
+export async function consultarSaldo(req, res, next) {
+  try {
+    const filtro = montarFiltroTransacoes(req.query);
+    const transacoes = await Transacao.find(filtro).exec();
+    const resumo = calcularResumoFinanceiro(transacoes);
+
+    return res.json(resumo);
   } catch (erro) {
     return next(erro);
   }
