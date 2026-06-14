@@ -130,7 +130,7 @@ describe('API de transacoes', () => {
 
     expect(resposta.status).toBe(400);
     expect(resposta.body).toMatchObject({
-      mensagem: 'Nao foi possivel atualizar a transacao.',
+      mensagem: 'Não foi possivel atualizar a transação.',
     });
     expect(resposta.body.erros).toEqual(
       expect.arrayContaining([
@@ -169,7 +169,7 @@ describe('API de transacoes', () => {
 
     expect(resposta.status).toBe(404);
     expect(resposta.body).toEqual({
-      mensagem: 'Transacao nao encontrada.',
+      mensagem: 'Transação não encontrada.',
     });
     expect(findByIdMock).toHaveBeenCalledWith('transacao-inexistente');
     expect(execMock).toHaveBeenCalledTimes(1);
@@ -186,7 +186,7 @@ describe('API de transacoes', () => {
 
     expect(resposta.status).toBe(400);
     expect(resposta.body).toMatchObject({
-      mensagem: 'Nao foi possivel criar a transacao.',
+      mensagem: 'Não foi possivel criar a transação.',
     });
     expect(resposta.body.erros).toEqual(
       expect.arrayContaining([
@@ -214,9 +214,9 @@ describe('API de transacoes', () => {
 
   it('lista todas as transacoes da mais recente para a mais antiga', async () => {
     const execMock = jest.fn().mockResolvedValue([
-      { _id: 't-3', data: '2026-06-03', valor: 30 },
-      { _id: 't-2', data: '2026-06-02', valor: 20 },
-      { _id: 't-1', data: '2026-06-01', valor: 10 },
+      { _id: 't-3', tipo: 'entrada', data: '2026-06-03', valor: 30 },
+      { _id: 't-2', tipo: 'saida', data: '2026-06-02', valor: 20 },
+      { _id: 't-1', tipo: 'entrada', data: '2026-06-01', valor: 10 },
     ]);
     const sortMock = jest.fn().mockReturnValue({ exec: execMock });
 
@@ -229,11 +229,14 @@ describe('API de transacoes', () => {
     expect(findMock).toHaveBeenCalledWith({});
     expect(sortMock).toHaveBeenCalledWith({ data: -1, _id: -1 });
     expect(execMock).toHaveBeenCalledTimes(1);
-    expect(resposta.body).toEqual([
-      { _id: 't-3', data: '2026-06-03', valor: 30, moeda: 'BRL' },
-      { _id: 't-2', data: '2026-06-02', valor: 20, moeda: 'BRL' },
-      { _id: 't-1', data: '2026-06-01', valor: 10, moeda: 'BRL' },
-    ]);
+    expect(resposta.body).toEqual({
+      transacoes: [
+        { _id: 't-3', tipo: 'entrada', data: '2026-06-03', valor: 30, moeda: 'BRL' },
+        { _id: 't-2', tipo: 'saida', data: '2026-06-02', valor: 20, moeda: 'BRL' },
+        { _id: 't-1', tipo: 'entrada', data: '2026-06-01', valor: 10, moeda: 'BRL' },
+      ],
+      saldo: 'R$ 20',
+    });
   });
 
   it('filtra transacoes por tipo', async () => {
@@ -346,10 +349,9 @@ describe('API de transacoes', () => {
     expect(findMock).toHaveBeenCalledWith({});
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toEqual({
-      entradas: 350,
-      saidas: 40,
-      saldo: 310,
-      moeda: 'BRL',
+      entradas: 'R$ 350',
+      saidas: 'R$ 40',
+      saldo: 'R$ 310',
     });
   });
 
@@ -375,10 +377,9 @@ describe('API de transacoes', () => {
     });
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toEqual({
-      entradas: 125,
-      saidas: 75,
-      saldo: 50,
-      moeda: 'BRL',
+      entradas: 'R$ 125',
+      saidas: 'R$ 75',
+      saldo: 'R$ 50',
     });
   });
 
@@ -419,7 +420,7 @@ describe('API de transacoes', () => {
 
     expect(resposta.status).toBe(404);
     expect(resposta.body).toEqual({
-      mensagem: 'Transacao nao encontrada.',
+      mensagem: 'Transação não encontrada.',
     });
     expect(findByIdMock).toHaveBeenCalledWith('transacao-inexistente');
     expect(execMock).toHaveBeenCalledTimes(1);
@@ -492,13 +493,19 @@ describe('API de transacoes', () => {
     const listagemResposta = await request(app).get('/transacoes');
 
     expect(listagemResposta.status).toBe(200);
-    expect(listagemResposta.body).toEqual([]);
+    expect(listagemResposta.body).toEqual({
+      transacoes: [],
+      saldo: 'R$ 0',
+    });
 
     const filtragemResposta = await request(app)
       .get('/transacoes')
       .query({ categoria: 'alimentacao' });
 
     expect(filtragemResposta.status).toBe(200);
-    expect(filtragemResposta.body).toEqual([]);
+    expect(filtragemResposta.body).toEqual({
+      transacoes: [],
+      saldo: 'R$ 0',
+    });
   });
 });

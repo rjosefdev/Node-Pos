@@ -40,6 +40,9 @@ describe('Transacao model', () => {
 
     expect(erro).toBeDefined();
     expect(erro.errors.data).toBeDefined();
+    expect(erro.errors.data.message).toBe(
+      'Cast to date failed for value "Invalid Date" (type Date) at path "data"'
+    );
   });
 
   it('mantem descricao como opcional', () => {
@@ -65,6 +68,9 @@ describe('Transacao model', () => {
 
     expect(erro).toBeDefined();
     expect(erro.errors.data).toBeDefined();
+    expect(erro.errors.data.message).toBe(
+      'Cast to date failed for value "Invalid Date" (type Date) at path "data"'
+    );
   });
 
   it('rejeita valor zero ou negativo', () => {
@@ -83,5 +89,9 @@ describe('Transacao model', () => {
     expect(Object.keys(erro.errors)).toEqual(
       expect.arrayContaining(['tipo', 'categoria', 'data', 'valor'])
     );
+    expect(erro.errors.tipo.message).toBe('O tipo da transação e obrigatório.');
+    expect(erro.errors.categoria.message).toBe('A categoria da transação e obrigatória.');
+    expect(erro.errors.data.message).toBe('A data da transação e obrigatória.');
+    expect(erro.errors.valor.message).toBe('O valor da transação e obrigatório.');
   });
 });

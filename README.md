@@ -45,3 +45,13 @@ Response
 - `services`: concentra as regras de negócio.
 - `models`: representa o acesso ao MongoDB e as operações de dados.
 - `config`: centraliza configurações da aplicação, como conexão com o banco.
+
+### Prints do INSOMNIA
+
+[POST] Adicionar Transação de Entrada
+
+![add transacao tipo entrada](/assets/addTransacaoEntrada.png)
+
+[DELETE] Transação por ID
+
+![delete by id](/assets/deleteById.png)

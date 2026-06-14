@@ -3,6 +3,7 @@ import { validarTransacaoPayload } from '../validators/transacao.js';
 
 const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const MOEDA_FIXA = 'BRL';
+const MOEDA_FIXA_VIEW = 'R$';
 
 function escaparRegex(valor) {
   return valor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -84,8 +85,16 @@ function montarFiltroTransacoes(query = {}) {
   return filtro;
 }
 
+function formatarResumo(resumo) {
+  return {
+    entradas: `${MOEDA_FIXA_VIEW} ${resumo.entradas}`,
+    saidas: `${MOEDA_FIXA_VIEW} ${resumo.saidas}`,
+    saldo: `${MOEDA_FIXA_VIEW} ${resumo.saldo}`,
+  };
+}
+
 function calcularResumoFinanceiro(transacoes = []) {
-  return transacoes.reduce(
+  const resumo = transacoes.reduce(
     (resumo, transacao) => {
       const valor = Number(transacao?.valor) || 0;
       const tipo = transacao?.tipo;
@@ -106,6 +115,7 @@ function calcularResumoFinanceiro(transacoes = []) {
       saldo: 0,
     }
   );
+  return formatarResumo(resumo);
 }
 
 function serializarTransacao(transacao) {
@@ -127,7 +137,7 @@ export async function criarTransacao(req, res, next) {
 
     if (erros.length > 0) {
       return res.status(400).json({
-        mensagem: 'Nao foi possivel criar a transacao.',
+        mensagem: 'Não foi possivel criar a transação.',
         erros,
       });
     }
@@ -147,7 +157,7 @@ export async function atualizarTransacao(req, res, next) {
 
     if (erros.length > 0) {
       return res.status(400).json({
-        mensagem: 'Nao foi possivel atualizar a transacao.',
+        mensagem: 'Não foi possivel atualizar a transação.',
         erros,
       });
     }
@@ -161,7 +171,7 @@ export async function atualizarTransacao(req, res, next) {
     } catch (erro) {
       if (erro?.name === 'CastError') {
         return res.status(404).json({
-          mensagem: 'Transacao nao encontrada.',
+          mensagem: 'Transação não encontrada.',
         });
       }
 
@@ -170,7 +180,7 @@ export async function atualizarTransacao(req, res, next) {
 
     if (!transacao) {
       return res.status(404).json({
-        mensagem: 'Transacao nao encontrada.',
+        mensagem: 'Transação não encontrada.',
       });
     }
 
@@ -194,7 +204,7 @@ export async function excluirTransacao(req, res, next) {
     } catch (erro) {
       if (erro?.name === 'CastError') {
         return res.status(404).json({
-          mensagem: 'Transacao nao encontrada.',
+          mensagem: 'Transação não encontrada.',
         });
       }
 
@@ -203,7 +213,7 @@ export async function excluirTransacao(req, res, next) {
 
     if (!transacaoRemovida) {
       return res.status(404).json({
-        mensagem: 'Transacao nao encontrada.',
+        mensagem: 'Transação não encontrada.',
       });
     }
 
@@ -217,8 +227,13 @@ export async function listarTransacoes(req, res, next) {
   try {
     const filtro = montarFiltroTransacoes(req.query);
     const transacoes = await Transacao.find(filtro).sort({ data: -1, _id: -1 }).exec();
+    const resumo = calcularResumoFinanceiro(transacoes);
+    const transacoesSerializadas = transacoes.map(serializarTransacao);
 
-    return res.json(transacoes.map(serializarTransacao));
+    return res.json({
+      transacoes: transacoesSerializadas,
+      saldo: resumo.saldo,
+    });
   } catch (erro) {
     return next(erro);
   }
@@ -232,7 +247,6 @@ export async function consultarSaldo(req, res, next) {
 
     return res.json({
       ...resumo,
-      moeda: MOEDA_FIXA,
     });
   } catch (erro) {
     return next(erro);
@@ -250,7 +264,7 @@ export async function buscarTransacaoPorId(req, res, next) {
     } catch (erro) {
       if (erro?.name === 'CastError') {
         return res.status(404).json({
-          mensagem: 'Transacao nao encontrada.',
+          mensagem: 'Transação não encontrada.',
         });
       }
 
@@ -259,7 +273,7 @@ export async function buscarTransacaoPorId(req, res, next) {
 
     if (!transacao) {
       return res.status(404).json({
-        mensagem: 'Transacao nao encontrada.',
+        mensagem: 'Transação não encontrada.',
       });
     }
 
