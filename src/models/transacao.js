@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-function normalizeAcceptedDate(value) {
+function normalizarData(value) {
   if (value == null || value === '') {
     return value;
   }
@@ -27,8 +27,8 @@ const transacaoSchema = new Schema(
       type: String,
       required: [true, 'O tipo da transação e obrigatório.'],
       enum: {
-        values: ['receita', 'despesa'],
-        message: 'O tipo deve ser receita ou despesa.',
+        values: ['entrada', 'saida'],
+        message: 'O tipo deve ser entrada ou saida.',
       },
       trim: true,
       lowercase: true,
@@ -41,7 +41,7 @@ const transacaoSchema = new Schema(
     data: {
       type: Date,
       required: [true, 'A data da transação e obrigatória.'],
-      set: normalizeAcceptedDate,
+      set: normalizarData,
     },
     valor: {
       type: Number,

@@ -3,7 +3,7 @@ import Transacao from './transacao.js';
 
 function criarTransacaoValida(overrides = {}) {
   return new Transacao({
-    tipo: 'receita',
+    tipo: 'entrada',
     categoria: 'Salario',
     data: '2026-06-06',
     valor: 1250.75,
@@ -26,7 +26,7 @@ describe('Transacao model', () => {
     const erro = transacao.validateSync();
 
     expect(erro).toBeUndefined();
-    expect(transacao.tipo).toBe('receita');
+    expect(transacao.tipo).toBe('entrada');
     expect(transacao.categoria).toBe('Salario');
     expect(transacao.data).toBeInstanceOf(Date);
     expect(transacao.data.toISOString()).toBe('2026-06-06T00:00:00.000Z');
@@ -56,7 +56,7 @@ describe('Transacao model', () => {
 
     expect(erro).toBeDefined();
     expect(erro.errors.tipo).toBeDefined();
-    expect(erro.errors.tipo.message).toBe('O tipo deve ser receita ou despesa.');
+    expect(erro.errors.tipo.message).toBe('O tipo deve ser entrada ou saida.');
   });
 
   it('rejeita data fora do ISO 8601', () => {

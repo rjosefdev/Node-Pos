@@ -90,19 +90,19 @@ function calcularResumoFinanceiro(transacoes = []) {
       const valor = Number(transacao?.valor) || 0;
       const tipo = transacao?.tipo;
 
-      if (tipo === 'receita') {
-        resumo.receitas += valor;
+      if (tipo === 'entrada') {
+        resumo.entradas += valor;
         resumo.saldo += valor;
-      } else if (tipo === 'despesa') {
-        resumo.despesas += valor;
+      } else if (tipo === 'saida') {
+        resumo.saidas += valor;
         resumo.saldo -= valor;
       }
 
       return resumo;
     },
     {
-      receitas: 0,
-      despesas: 0,
+      entradas: 0,
+      saidas: 0,
       saldo: 0,
     }
   );
@@ -113,8 +113,7 @@ function serializarTransacao(transacao) {
     return transacao;
   }
 
-  const dados =
-    typeof transacao.toObject === 'function' ? transacao.toObject() : { ...transacao };
+  const dados = typeof transacao.toObject === 'function' ? transacao.toObject() : { ...transacao };
 
   return {
     ...dados,

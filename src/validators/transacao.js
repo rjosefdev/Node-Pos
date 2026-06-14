@@ -31,8 +31,8 @@ export function validarTransacaoPayload(payload = {}) {
 
   if (!tipo) {
     erros.push({ campo: 'tipo', mensagem: 'O tipo da transação é obrigatório.' });
-  } else if (!['receita', 'despesa'].includes(tipo)) {
-    erros.push({ campo: 'tipo', mensagem: 'O tipo deve ser receita ou despesa.' });
+  } else if (!['entrada', 'saida'].includes(tipo)) {
+    erros.push({ campo: 'tipo', mensagem: 'O tipo deve ser entrada ou saida.' });
   }
 
   if (!categoria) {

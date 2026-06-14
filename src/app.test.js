@@ -42,7 +42,7 @@ describe('API de transacoes', () => {
     });
 
     const resposta = await request(app).post('/transacoes').send({
-      tipo: ' Receita ',
+      tipo: ' entrada ',
       categoria: '  Salario  ',
       data: '2026-06-06',
       valor: 1250.75,
@@ -51,7 +51,7 @@ describe('API de transacoes', () => {
     expect(resposta.status).toBe(201);
     expect(transacaoMock).toHaveBeenCalledTimes(1);
     expect(transacaoMock).toHaveBeenCalledWith({
-      tipo: 'receita',
+      tipo: 'entrada',
       categoria: 'Salario',
       data: '2026-06-06',
       valor: 1250.75,
@@ -59,7 +59,7 @@ describe('API de transacoes', () => {
     expect(saveMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toMatchObject({
       _id: 'transacao-1',
-      tipo: 'receita',
+      tipo: 'entrada',
       categoria: 'Salario',
       data: '2026-06-06',
       valor: 1250.75,
@@ -71,7 +71,7 @@ describe('API de transacoes', () => {
   it('atualiza uma transacao existente e persiste as alteracoes', async () => {
     const transacaoExistente = {
       _id: 'transacao-42',
-      tipo: 'despesa',
+      tipo: 'saida',
       categoria: 'Alimentacao',
       data: '2026-06-10',
       valor: 87.9,
@@ -93,7 +93,7 @@ describe('API de transacoes', () => {
     });
 
     const resposta = await request(app).put('/transacoes/transacao-42').send({
-      tipo: ' Receita ',
+      tipo: ' entrada ',
       categoria: '  Salario  ',
       data: '2026-06-12',
       valor: 1500.5,
@@ -104,14 +104,14 @@ describe('API de transacoes', () => {
     expect(findByIdMock).toHaveBeenCalledWith('transacao-42');
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(saveMock).toHaveBeenCalledTimes(1);
-    expect(transacaoExistente.tipo).toBe('receita');
+    expect(transacaoExistente.tipo).toBe('entrada');
     expect(transacaoExistente.categoria).toBe('Salario');
     expect(transacaoExistente.data).toBe('2026-06-12');
     expect(transacaoExistente.valor).toBe(1500.5);
     expect(transacaoExistente.descricao).toBe('Salario atualizado');
     expect(resposta.body).toEqual({
       _id: 'transacao-42',
-      tipo: 'receita',
+      tipo: 'entrada',
       categoria: 'Salario',
       data: '2026-06-12',
       valor: 1500.5,
@@ -136,7 +136,7 @@ describe('API de transacoes', () => {
       expect.arrayContaining([
         expect.objectContaining({
           campo: 'tipo',
-          mensagem: 'O tipo deve ser receita ou despesa.',
+          mensagem: 'O tipo deve ser entrada ou saida.',
         }),
         expect.objectContaining({
           campo: 'categoria',
@@ -161,7 +161,7 @@ describe('API de transacoes', () => {
     findByIdMock.mockReturnValue({ exec: execMock });
 
     const resposta = await request(app).put('/transacoes/transacao-inexistente').send({
-      tipo: 'despesa',
+      tipo: 'saida',
       categoria: 'Alimentacao',
       data: '2026-06-12',
       valor: 20,
@@ -192,7 +192,7 @@ describe('API de transacoes', () => {
       expect.arrayContaining([
         expect.objectContaining({
           campo: 'tipo',
-          mensagem: 'O tipo deve ser receita ou despesa.',
+          mensagem: 'O tipo deve ser entrada ou saida.',
         }),
         expect.objectContaining({
           campo: 'categoria',
@@ -237,15 +237,15 @@ describe('API de transacoes', () => {
   });
 
   it('filtra transacoes por tipo', async () => {
-    const execMock = jest.fn().mockResolvedValue([{ _id: 't-1', tipo: 'despesa' }]);
+    const execMock = jest.fn().mockResolvedValue([{ _id: 't-1', tipo: 'saida' }]);
     const sortMock = jest.fn().mockReturnValue({ exec: execMock });
 
     findMock.mockReturnValue({ sort: sortMock });
 
-    const resposta = await request(app).get('/transacoes').query({ tipo: 'Despesa' });
+    const resposta = await request(app).get('/transacoes').query({ tipo: 'saida' });
 
     expect(resposta.status).toBe(200);
-    expect(findMock).toHaveBeenCalledWith({ tipo: 'despesa' });
+    expect(findMock).toHaveBeenCalledWith({ tipo: 'saida' });
     expect(sortMock).toHaveBeenCalledWith({ data: -1, _id: -1 });
     expect(execMock).toHaveBeenCalledTimes(1);
   });
@@ -312,7 +312,7 @@ describe('API de transacoes', () => {
     findMock.mockReturnValue({ sort: sortMock });
 
     const resposta = await request(app).get('/transacoes').query({
-      tipo: 'Despesa',
+      tipo: 'saida',
       categoria: 'alimentacao',
       dataInicio: '2026-06-01',
       dataFim: '2026-06-30',
@@ -320,7 +320,7 @@ describe('API de transacoes', () => {
 
     expect(resposta.status).toBe(200);
     expect(findMock).toHaveBeenCalledWith({
-      tipo: 'despesa',
+      tipo: 'saida',
       categoria: /^alimentacao$/i,
       data: {
         $gte: criarDataUtc(2026, 6, 1),
@@ -331,11 +331,11 @@ describe('API de transacoes', () => {
     expect(execMock).toHaveBeenCalledTimes(1);
   });
 
-  it('consulta o saldo geral considerando receitas e despesas', async () => {
+  it('consulta o saldo geral considerando entradas e saidas', async () => {
     const execMock = jest.fn().mockResolvedValue([
-      { _id: 't-1', tipo: 'receita', valor: 250 },
-      { _id: 't-2', tipo: 'despesa', valor: 40 },
-      { _id: 't-3', tipo: 'receita', valor: 100 },
+      { _id: 't-1', tipo: 'entrada', valor: 250 },
+      { _id: 't-2', tipo: 'saida', valor: 40 },
+      { _id: 't-3', tipo: 'entrada', valor: 100 },
     ]);
 
     findMock.mockReturnValue({ exec: execMock });
@@ -346,8 +346,8 @@ describe('API de transacoes', () => {
     expect(findMock).toHaveBeenCalledWith({});
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toEqual({
-      receitas: 350,
-      despesas: 40,
+      entradas: 350,
+      saidas: 40,
       saldo: 310,
       moeda: 'BRL',
     });
@@ -355,8 +355,8 @@ describe('API de transacoes', () => {
 
   it('consulta o saldo filtrado por intervalo de datas', async () => {
     const execMock = jest.fn().mockResolvedValue([
-      { _id: 't-2', tipo: 'despesa', valor: 75 },
-      { _id: 't-3', tipo: 'receita', valor: 125 },
+      { _id: 't-2', tipo: 'saida', valor: 75 },
+      { _id: 't-3', tipo: 'entrada', valor: 125 },
     ]);
 
     findMock.mockReturnValue({ exec: execMock });
@@ -375,8 +375,8 @@ describe('API de transacoes', () => {
     });
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toEqual({
-      receitas: 125,
-      despesas: 75,
+      entradas: 125,
+      saidas: 75,
       saldo: 50,
       moeda: 'BRL',
     });
@@ -385,7 +385,7 @@ describe('API de transacoes', () => {
   it('consulta uma transacao pelo identificador', async () => {
     const execMock = jest.fn().mockResolvedValue({
       _id: 'transacao-42',
-      tipo: 'despesa',
+      tipo: 'saida',
       categoria: 'Alimentacao',
       data: '2026-06-10',
       valor: 87.9,
@@ -401,7 +401,7 @@ describe('API de transacoes', () => {
     expect(execMock).toHaveBeenCalledTimes(1);
     expect(resposta.body).toEqual({
       _id: 'transacao-42',
-      tipo: 'despesa',
+      tipo: 'saida',
       categoria: 'Alimentacao',
       data: '2026-06-10',
       valor: 87.9,
@@ -473,7 +473,7 @@ describe('API de transacoes', () => {
     });
 
     const criacaoResposta = await request(app).post('/transacoes').send({
-      tipo: 'despesa',
+      tipo: 'saida',
       categoria: 'Alimentacao',
       data: '2026-06-11',
       valor: 45.5,
